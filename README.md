@@ -4,11 +4,14 @@
 - [Django Channels](https://channels.readthedocs.io/en/latest/index.html) to make the ASGI Requests
 - Uses ReconnectingWebSocket insted of WebSocket
 - Uses [Bootsnipp Chat Template](https://bootsnipp.com/)
+- Uses [Parceljs](https://parceljs.org/getting_started.html) Instade of WebPackjs
 
 ## Dependencies
 
 - Django
 - React
+- [Parceljs](https://parceljs.org/getting_started.html)
+- Babel
 - Channels
 - Redis
 - ReconnectingWebSocket
