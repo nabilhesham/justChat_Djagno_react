@@ -1,20 +1,22 @@
 import React from "react";
-// import { connect } from "react-redux";
+import { connect } from "react-redux";
 
 // import Sidepanel from "./Sidepanel/Sidepanel";
+
+import Hoc from "../hoc/hoc";
 
 import WebSocketInstance from "../websocket";
 
 class Chat extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { message: "" };
 
     this.waitForSocketConnection(() => {
       // add the callbacks to websocket.js
       WebSocketInstance.addCallbacks(
         this.setMessages.bind(this),
-        this.newMessage.bind(this)
+        this.addMessage.bind(this)
       );
       // call the fetch messages from websocket.js
       WebSocketInstance.fetchMessages(this.props.currentUser);
@@ -41,7 +43,7 @@ class Chat extends React.Component {
   }
 
   // add the new message to the chat
-  newMessage(message) {
+  addMessage(message) {
     this.setState({ messages: [...this.state.messages, message] });
   }
 
@@ -62,30 +64,36 @@ class Chat extends React.Component {
   };
 
   // Convert The Time
-  convertMessageTimestamp(timestamp) {
-    let newTimestamp = Math.round(
-      (new Date().getTime() - new Date(timestamp).getTime()) / 1000
+  renderTimestamp = (timestamp) => {
+    let prefix = "";
+    const timeDiff = Math.round(
+      (new Date().getTime() - new Date(timestamp).getTime()) / 60000
     );
-
-    // check if a day or hours or Minutes
-    if (newTimestamp >= 86400) {
-      newTimestamp = Math.round(newTimestamp / 86400) + " Days ";
-    } else if (newTimestamp >= 3600) {
-      newTimestamp = Math.round(newTimestamp / 3600) + " Hours ";
-    } else if (newTimestamp >= 60) {
-      newTimestamp = Math.round(newTimestamp / 60) + " Minutes ";
+    if (timeDiff < 1) {
+      // less than one minute ago
+      prefix = "just now...";
+    } else if (timeDiff < 60 && timeDiff > 1) {
+      // less than sixty minutes ago
+      prefix = `${timeDiff} minutes ago`;
+    } else if (timeDiff < 24 * 60 && timeDiff > 60) {
+      // less than 24 hours ago
+      prefix = `${Math.round(timeDiff / 60)} hours ago`;
+    } else if (timeDiff < 31 * 24 * 60 && timeDiff > 24 * 60) {
+      // less than 7 days ago
+      prefix = `${Math.round(timeDiff / (60 * 24))} days ago`;
     } else {
-      newTimestamp = newTimestamp + " Seconds ";
+      prefix = `${new Date(timestamp)}`;
     }
-    return newTimestamp;
-  }
+    return prefix;
+  };
 
   // render the li tag with the messages
   renderMessages(messages) {
-    const currentUser = "nabil";
-    return messages.map((message) => (
+    const currentUser = this.props.username;
+    return messages.map((message, i, arr) => (
       <li
         key={message.id}
+        style={{ marginBottom: arr.length - 1 === i ? "300px" : "15px" }}
         className={message.author === currentUser ? "sent" : "replies"}
       >
         <img src="http://emilcarlsson.se/assets/mikeross.png" />
@@ -93,23 +101,40 @@ class Chat extends React.Component {
           {message.content}
           <br />
           <small style={{ fontSize: "8pt", color: "black" }}>
-            {this.convertMessageTimestamp(message.timestamp)} ago
+            {this.renderTimestamp(message.timestamp)}
           </small>
         </p>
       </li>
     ));
   }
 
+  scrollToBottom = () => {
+    this.messagesEnd.scrollIntoView({ behavior: "smooth" });
+  };
+
   componentDidMount() {
-    WebSocketInstance.connect();
+    this.scrollToBottom();
+  }
+
+  componentDidUpdate() {
+    this.scrollToBottom();
   }
 
   render() {
     const messages = this.state.messages;
     return (
-      <div>
+      <Hoc>
         <div className="messages">
-          <ul id="chat-log">{messages && this.renderMessages(messages)}</ul>
+          <ul id="chat-log">
+            {messages && this.renderMessages(messages)}
+            {/* Auto Scrolling */}
+            <div
+              style={{ float: "left", clear: "both" }}
+              ref={(el) => {
+                this.messagesEnd = el;
+              }}
+            ></div>
+          </ul>
         </div>
         <div className="message-input">
           <form onSubmit={this.sendMessageHandler}>
@@ -128,16 +153,15 @@ class Chat extends React.Component {
             </div>
           </form>
         </div>
-      </div>
+      </Hoc>
     );
   }
 }
 
-// const mapStateToProps = (state) => {
-//   return {
-//     username: state.username,
-//   };
-// };
+const mapStateToProps = (state) => {
+  return {
+    username: state.username,
+  };
+};
 
-// export default connect(mapStateToProps)(Chat);
-export default Chat;
+export default connect(mapStateToProps)(Chat);

@@ -26,7 +26,22 @@ import Chat from "./containers/Chat";
 
 const composeEnhances = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-const store = createStore(reducer, composeEnhances(applyMiddleware(thunk)));
+// const store = createStore(reducer, composeEnhances(applyMiddleware(thunk)));
+
+function configureStore() {
+  const store = createStore(reducer, composeEnhances(applyMiddleware(thunk)));
+
+  if (module.hot) {
+    module.hot.accept("./store/reducers", () => {
+      const nextRootReducer = require("./store/reducers/auth");
+      store.replaceReducer(nextRootReducer);
+    });
+  }
+
+  return store;
+}
+
+const store = configureStore();
 
 const app = (
   <Provider store={store}>
