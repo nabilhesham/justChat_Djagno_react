@@ -8,10 +8,9 @@ import Hoc from "../hoc/hoc";
 import WebSocketInstance from "../websocket";
 
 class Chat extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { message: "" };
+  state = { message: "" };
 
+  initialiseChat() {
     this.waitForSocketConnection(() => {
       // add the callbacks to websocket.js
       WebSocketInstance.addCallbacks(
@@ -19,8 +18,25 @@ class Chat extends React.Component {
         this.addMessage.bind(this)
       );
       // call the fetch messages from websocket.js
-      WebSocketInstance.fetchMessages(this.props.currentUser);
+      WebSocketInstance.fetchMessages(
+        this.props.username,
+        this.props.match.params.chatID
+      );
     });
+
+    // grap the value of the chat id from the path
+    WebSocketInstance.connect(this.props.match.params.chatID);
+  }
+
+  constructor(props) {
+    super(props);
+    // get the chat one time only
+    this.initialiseChat();
+  }
+
+  componentWillReceiveProps(newProps) {
+    // to get the chat anytime we click on chat
+    this.initialiseChat();
   }
 
   // check the socket connection
@@ -51,7 +67,8 @@ class Chat extends React.Component {
   sendMessageHandler = (e) => {
     e.preventDefault();
     const messageObject = {
-      from: "nabil",
+      // from: "nabil",
+      from: this.props.username,
       content: this.state.message,
     };
     WebSocketInstance.newChatMessage(messageObject);

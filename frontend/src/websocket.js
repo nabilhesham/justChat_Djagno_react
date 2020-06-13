@@ -18,20 +18,20 @@ class WebsocketService {
   }
 
   // WebSocket Connection handling
-  connect() {
+  connect(chatUrl) {
     // create a path for the websocket room
-    const path = "ws://127.0.0.1:8000/ws/chat/test/";
+    const path = `ws://127.0.0.1:8000/ws/chat/${chatUrl}/`;
     this.socketRef = new WebSocket(path);
 
     // websocket actions
     this.socketRef.onopen = () => {
       console.log("websocket open");
     };
-    this.socketNewMessage(
-      JSON.stringify({
-        command: "fetch_messages",
-      })
-    );
+    // this.socketNewMessage(
+    //   JSON.stringify({
+    //     command: "fetch_messages",
+    //   })
+    // );
     this.socketRef.onmessage = (e) => {
       // sending the message
       this.socketNewMessage(e.data);
@@ -64,10 +64,11 @@ class WebsocketService {
   }
 
   //   fetch messages
-  fetchMessages(username) {
+  fetchMessages(username, chatId) {
     this.sendMessage({
       command: "fetch_messages",
       username: username,
+      chatId: chatId,
     });
   }
 
