@@ -24,18 +24,13 @@ class Chat extends React.Component {
       );
     });
 
-    // grap the value of the chat id from the path
+    // grap the value of the chat id from the path and use it to connect to websocket
     WebSocketInstance.connect(this.props.match.params.chatID);
   }
 
   constructor(props) {
     super(props);
     // get the chat one time only
-    this.initialiseChat();
-  }
-
-  componentWillReceiveProps(newProps) {
-    // to get the chat anytime we click on chat
     this.initialiseChat();
   }
 
@@ -70,6 +65,7 @@ class Chat extends React.Component {
       // from: "nabil",
       from: this.props.username,
       content: this.state.message,
+      chatId: this.props.match.params.chatID,
     };
     WebSocketInstance.newChatMessage(messageObject);
     this.setState({ message: "" });
@@ -135,6 +131,21 @@ class Chat extends React.Component {
 
   componentDidUpdate() {
     this.scrollToBottom();
+  }
+
+  componentWillReceiveProps(newProps) {
+    if (this.props.match.params.chatID !== newProps.match.params.chatID) {
+      WebSocketInstance.disconnect();
+      this.waitForSocketConnection(() => {
+        // call the fetch messages from websocket.js
+        WebSocketInstance.fetchMessages(
+          this.props.username,
+          newProps.match.params.chatID
+        );
+      });
+      // grap the value of the chat id from the path and use it to connect to websocket
+      WebSocketInstance.connect(newProps.match.params.chatID);
+    }
   }
 
   render() {

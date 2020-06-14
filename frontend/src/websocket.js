@@ -46,6 +46,12 @@ class WebsocketService {
     };
   }
 
+  // dissconect connection to websocket
+
+  disconnect() {
+    this.socketRef.close();
+  }
+
   // handling the recived data
   socketNewMessage(data) {
     const parsedData = JSON.parse(data);
@@ -78,6 +84,7 @@ class WebsocketService {
       command: "new_message",
       from: message.from,
       message: message.content,
+      chatId: message.chatId,
     });
   }
 

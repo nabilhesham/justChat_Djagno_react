@@ -8,6 +8,7 @@
 - Uses [Django allauth](https://django-allauth.readthedocs.io/en/latest/installation.html)
 - Uses [Django Rest Auth](https://django-rest-auth.readthedocs.io/en/latest/introduction.html)
 - Uses [ANT Design For React](https://ant.design/docs/react/introduce) For The Spinner
+- connect to Different chats
 
 ## Dependencies
 
